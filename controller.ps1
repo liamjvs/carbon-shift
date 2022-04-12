@@ -76,10 +76,11 @@ catch {
 }
 
 if($action -eq "Start"){
-    Start-AzVM -Id "$vmID"
-    Update-AzTag -ResourceId $vmID -Tag @{csLastRun = (Get-Date -Format "dd/MM/yyyy HH:mm")} -Operation Merge
+    Start-AzVM -Id $vmID
+	$timeNow =  (Get-Date -Format "dd/MM/yyyy hh:mm")
+	Update-AzTag -ResourceId $vmID -Tag @{csLastRun = $timeNow} -Operation Merge
 } elseif ($action -eq "Stop"){
-    Stop-AzVM -Id "$vmID" -Force
+    Stop-AzVM -Id $vmID -Force
 }
 
 $body = @{

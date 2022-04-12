@@ -24,7 +24,11 @@ function findSlot($timeFrame, $slots) {
         $currentIndex = $slots.IndexOf($slot)
         for ($i = 0; $i -lt ($adjacent); $i++) {
             $intensity += [int]$slots[($currentIndex + $i)].intensity.forecast
-            $endTime = $slots[($currentIndex + $i)].to | Get-Date
+            if($null -ne ($slots[($currentIndex + $i)])){
+                $endTime = $slots[($currentIndex + $i)].to | Get-Date
+            } else {
+                $endTime = $null
+            }
         }
         $averageIntensity = $intensity / $adjacent
         if ($endTime -ne $null) {
@@ -108,8 +112,8 @@ function sanitiseSlotsFound($slotsFound) {
         foreach ($sanitisedSlot in $sanitisedSlots) {
             $sanitised += [PSCustomObject]@{
                 azureRegion   = $region.azureRegion
-                slotStart     = Get-Date $sanitisedSlot.to -AsUTC
-                slotEnd       = Get-Date $sanitisedSlot.from -AsUTC
+                slotStart     = Get-Date $sanitisedSlot.from -AsUTC
+                slotEnd       = Get-Date $sanitisedSlot.to -AsUTC
                 intensity     = $sanitisedSlot.intensity
                 generationMix = $sanitisedSlot.generationmix
             }
@@ -183,6 +187,23 @@ function publishSlotsToLAW($slots) {
     $body = [System.Text.Encoding]::UTF8.GetBytes(($sanitisedSlots | ConvertTo-Json -Depth 100 -Compress))
     postLogAnalyticsData -logType $table -body $body
 }
+function publishGreenSlotsToLAW($slots) {
+    $table = "csGreenSlots"
+    $sanitisedSlots = @()
+    foreach($slot in $slots){
+        $slot.greenSlots.PSObject.Properties | ForEach-Object {
+            $sanitisedSlots += [PSCustomObject]@{
+                azureRegion   = $slot.azureRegion
+                length     = $_.Name
+                slotStart = $_.Value.startTime | Get-Date -AsUTC
+                slotEnd       = $_.Value.endTime | Get-Date -AsUTC
+                intensity     = $_.Value.intensity
+            }
+        }
+    }
+    $body = [System.Text.Encoding]::UTF8.GetBytes(($sanitisedSlots | ConvertTo-Json -Depth 100 -Compress))
+    postLogAnalyticsData -logType $table -body $body
+}
 
 function publishScheduleToLAW($body) {
     $table = "csSchedule"
@@ -223,7 +244,20 @@ foreach ($region in $regions) {
 }
 
 # Push Results to LAW
-publishSlotsToLAW -slots $slotsFound
+Write-Host "Publishing slots to our Log Analytics Workspace"
+$publishOutput = publishSlotsToLAW -slots $slotsFound
+if($publishOutput -ne 200){
+    Write-Error ("Error publishing results to Log Analytics Workspace - receiving error {0}." -f $publishOutput)
+} else {
+    Write-Host "Successfully published slots to our Log Analytics Workspace"
+}
+Write-Host "Publishing green slots to our Log Analytics Workspace"
+$publishOutput = publishGreenSlotsToLAW -slots $slotsFound
+if($publishOutput -ne 200){
+    Write-Error ("Error publishing green results to Log Analytics Workspace - receiving error {0}." -f $publishOutput)
+} else {
+    Write-Host "Successfully published green slots to our Log Analytics Workspace"
+}
 
 $resourceGraphQuery = @"
 resources
@@ -266,7 +300,7 @@ if ($queryResults.length -gt 0) {
             $resource.csLastRun = (Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0).AddDays(-$windowFrequency)
             # New-AzTag -ResourceId $resource.Id -Tag @{csLastRun = $resource.csLastRun}
         } else {
-            $resource.csLastRun = [datetime]::ParseExact($resource.csLastRun.ToString(), 'dd/MM/yyyy HH:mm', $null)
+            $resource.csLastRun = [datetime]::ParseExact($resource.csLastRun, 'dd/MM/yyyy HH:mm', $null)
         }
 
         if ($resource.csLastWindow -eq $null) {
@@ -274,33 +308,43 @@ if ($queryResults.length -gt 0) {
             $lastPossibleHour = ($resource.csStartTime).Split(':')[0]
             $lastPossibleMinute = ($resource.csStartTime).Split(':')[1]
             $lastPossible = (Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1]).Date
-            # if ($lastPossible -gt $now) {
+            if ($lastPossible -gt $now) {
                 $lastPossible = $lastPossible.AddDays(-$windowFrequency)
-            # }
+            }
             $resource.csLastWindow = $lastPossible
             Update-AzTag -ResourceId $resource.Id -Tag @{"csLastWindow"=(Get-Date $resource.csLastWindow -Format "dd/MM/yyyy HH:mm")} -Operation Merge
         }
         else {
             # Convert to DateTime
-            $resource.csLastWindow = [datetime]::ParseExact($resource.csLastWindow.ToString(), 'dd/MM/yyyy HH:mm', $null)
+            $resource.csLastWindow = [datetime]::ParseExact($resource.csLastWindow, 'dd/MM/yyyy HH:mm', $null)
 
-            if ($resource.csStartTime -eq $resource.csEndTime) {
-                if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime).AddDays($windowFrequency) -le $now)) {
-                    $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-                }
-                else {
-                    $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-                }
+            # Is the csLastWindow out of candence? Do now subtract the window frequency.
+            $lastGuess = (Get-Date $now -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 00 -Millisecond 00)
+            $lastGuess = $lastGuess.AddDays(-$windowFrequency)
+            if($lastGuess.AddDays($windowFrequency) -lt $now){
+                $lastGuess = $lastGuess.AddDays(1)
             }
-            else {
-                if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime) -le $now)) {
-                    $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-                }
-                else {
-                    $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-                }
-            }
-            if ((Get-Date $resource.csLastWindow) -lt $lastGuess) {
+
+            # if($lastGuess -gt $now){
+            #     $lastGuess = $lastGuess.AddDays(-$windowFrequency)
+            # }
+            # if ($resource.csStartTime -eq $resource.csEndTime) {
+            #     if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime).AddDays($windowFrequency) -le $now)) {
+            #         $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
+            #     }
+            #     else {
+            #         $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
+            #     }
+            # }
+            # else {
+            #     if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime) -le $now)) {
+            #         $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
+            #     }
+            #     else {
+            #         $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
+            #     }
+            # }
+            if ($resource.csLastWindow -lt $lastGuess) {
                 $resource.csLastWindow = $lastGuess
                 Update-AzTag -ResourceId $resource.id -Tag @{ csLastWindow = (Get-Date $resource.csLastWindow -Format "dd/MM/yyyy HH:mm") } -Operation Merge
             }
