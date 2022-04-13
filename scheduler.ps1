@@ -249,14 +249,14 @@ $publishOutput = publishSlotsToLAW -slots $slotsFound
 if($publishOutput -ne 200){
     Write-Error ("Error publishing results to Log Analytics Workspace - receiving error {0}." -f $publishOutput)
 } else {
-    Write-Host "Successfully published slots to our Log Analytics Workspace"
+    Write-Host "Successfully publishing slots to our Log Analytics Workspace"
 }
 Write-Host "Publishing green slots to our Log Analytics Workspace"
 $publishOutput = publishGreenSlotsToLAW -slots $slotsFound
 if($publishOutput -ne 200){
     Write-Error ("Error publishing green results to Log Analytics Workspace - receiving error {0}." -f $publishOutput)
 } else {
-    Write-Host "Successfully published green slots to our Log Analytics Workspace"
+    Write-Host "Successfully publishing green slots to our Log Analytics Workspace"
 }
 
 $resourceGraphQuery = @"
@@ -317,37 +317,6 @@ if ($queryResults.length -gt 0) {
         else {
             # Convert to DateTime
             $resource.csLastWindow = [datetime]::ParseExact($resource.csLastWindow, 'dd/MM/yyyy HH:mm', $null)
-
-            # Is the csLastWindow out of candence? Do now subtract the window frequency.
-            $lastGuess = (Get-Date $now -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 00 -Millisecond 00)
-            $lastGuess = $lastGuess.AddDays(-$windowFrequency)
-            if($lastGuess.AddDays($windowFrequency) -lt $now){
-                $lastGuess = $lastGuess.AddDays(1)
-            }
-
-            # if($lastGuess -gt $now){
-            #     $lastGuess = $lastGuess.AddDays(-$windowFrequency)
-            # }
-            # if ($resource.csStartTime -eq $resource.csEndTime) {
-            #     if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime).AddDays($windowFrequency) -le $now)) {
-            #         $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-            #     }
-            #     else {
-            #         $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-            #     }
-            # }
-            # else {
-            #     if ((Get-Date $resource.csStartTime) -le $now -and ((Get-Date $resource.csEndTime) -le $now)) {
-            #         $lastGuess = $now | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-            #     }
-            #     else {
-            #         $lastGuess = $now.AddDays(-$windowFrequency) | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-            #     }
-            # }
-            if ($resource.csLastWindow -lt $lastGuess) {
-                $resource.csLastWindow = $lastGuess
-                Update-AzTag -ResourceId $resource.id -Tag @{ csLastWindow = (Get-Date $resource.csLastWindow -Format "dd/MM/yyyy HH:mm") } -Operation Merge
-            }
         }
 
         # Work out the winow
@@ -393,7 +362,13 @@ if ($queryResults.length -gt 0) {
                             $vmScheduleName = "{0} Scheduled Start" -f $resource.name
                             $schedule = $automationAccountSchedules | where-object { $_.Name -eq $vmScheduleName }
 
-                            if (($schedule -eq $null) -or ($schedule.StartTime -ne $bestSlot.startTime)) {
+                            $inSlot = $false
+                            if($schedule -ne $null){
+                                # Check that we're not currently in our slot
+                                $inSlot = ($now.AddMinutes(-15) -le $schedule.StartTime.DateTime) -and ($now.AddMinutes(15) -ge $schedule.StartTime.DateTime)
+                            }
+
+                            if (!$inSlot -and (($schedule -eq $null) -or ($schedule.StartTime.DateTime -ne $bestSlot.startTime))) {
                                 $modifiedSchedule = $true
                                 $scheduleCreated = New-AzAutomationSchedule -ResourceGroupName 'liam-rg-greendog' `
                                     -AutomationAccountName 'liam-rg-greendog-aa' `
@@ -428,7 +403,7 @@ if ($queryResults.length -gt 0) {
     
                             $vmScheduleName = "{0} Scheduled Stop" -f $resource.name
                             $schedule = $automationAccountSchedules | where-object { $_.Name -eq $vmScheduleName }
-                            if (($schedule -eq $null) -or ($schedule.StartTime -ne $bestSlot.endTime)) {
+                            if (!$inSlot -and (($schedule -eq $null) -or ($schedule.StartTime.DateTime -ne $bestSlot.endTime))) {
                                 $modifiedSchedule = $true
                                 New-AzAutomationSchedule -ResourceGroupName 'liam-rg-greendog' `
                                     -AutomationAccountName 'liam-rg-greendog-aa' `
@@ -482,7 +457,6 @@ if ($queryResults.length -gt 0) {
                             Update-AzTag -ResourceId $resource.id -Tag $newTags.Properties.TagsProperty
                         }
                     }
-                    
                 }
             }
         }

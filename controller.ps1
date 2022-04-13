@@ -57,7 +57,7 @@ function getLAWDetails() {
     $lawRG = (Get-AutomationVariable -Name "LAW_RG")
     $lawName = (Get-AutomationVariable -Name "LAW_Name")
     $lawObject = Get-AzOperationalInsightsWorkspace -ResourceGroupName $lawRG -Name $lawName
-    $key = ($lawObject | Get-AzOperationalInsightsWorkspaceSharedKey).PrimarySharedKey
+    $key = ($lawObject | Get-AzOperationalInsightsWorkspaceSharedKey -WarningAction Ignore).PrimarySharedKey
     $customerId = $lawObject.CustomerId
     return @{
         workspaceId  = $customerId
@@ -65,7 +65,7 @@ function getLAWDetails() {
     }
 }
 
-$subId = $vmId.Split('/')[2]
+$subId = $vmID.Split('/')[2]
 
 try {
     $AzureContext = (Connect-AzAccount -Identity -Subscription $subId).context
@@ -77,8 +77,12 @@ catch {
 
 if($action -eq "Start"){
     Start-AzVM -Id $vmID
-	$timeNow =  (Get-Date -Format "dd/MM/yyyy hh:mm")
-	Update-AzTag -ResourceId $vmID -Tag @{csLastRun = $timeNow} -Operation Merge
+	$timeNow =  (Get-Date -Format "dd/MM/yyyy HH:mm")
+	$tags = (Get-AzTag -ResourceId $vmID)
+	$csLastRun = [datetime]::ParseExact($tags.Properties.TagsProperty.csLastRun, 'dd/MM/yyyy HH:mm', $null)
+	$windowFrequency = [int]($tags.Properties.TagsProperty.csFrequency).substring(($tags.Properties.TagsProperty.csFrequency).length - 2, 1)
+	$csLastRun = $csLastRun.AddDays([int]($windowFrequency))
+	Update-AzTag -ResourceId $vmID -Tag @{csLastRun = $timeNow, csLastWindow = (Get-Date $csLastRun -Format "dd/MM/yyyy HH:mm")} -Operation Merge
 } elseif ($action -eq "Stop"){
     Stop-AzVM -Id $vmID -Force
 }
