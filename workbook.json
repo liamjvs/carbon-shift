@@ -1,687 +1,702 @@
 {
-    "version": "Notebook/1.0",
-    "items": [
-      {
-        "type": 9,
-        "content": {
-          "version": "KqlParameterItem/1.0",
-          "crossComponentResources": [
-            "{logAnalytics}"
-          ],
-          "parameters": [
-            {
-              "id": "63683518-3eb9-4b51-bdae-84a0a1156ffc",
-              "version": "KqlParameterItem/1.0",
-              "name": "logAnalytics",
-              "label": "Log Analytics Workspace",
-              "type": 5,
-              "isRequired": true,
-              "query": "resources\r\n| where type =~'microsoft.operationalinsights/workspaces'\r\n| project id",
-              "crossComponentResources": [
-                "value::all"
-              ],
-              "value": "",
-              "typeSettings": {
-                "additionalResourceOptions": []
-              },
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "{logAnalytics}"
+        ],
+        "parameters": [
+          {
+            "id": "63683518-3eb9-4b51-bdae-84a0a1156ffc",
+            "version": "KqlParameterItem/1.0",
+            "name": "logAnalytics",
+            "label": "Log Analytics Workspace",
+            "type": 5,
+            "isRequired": true,
+            "query": "resources\r\n| where type =~'microsoft.operationalinsights/workspaces'\r\n| project id",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "value": "",
+            "typeSettings": {
+              "additionalResourceOptions": []
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.resourcegraph/resources"
+      },
+      "name": "parameters - 2"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "21b0f0c1-566d-4df1-ae60-be69d802d844",
+            "cellValue": "view",
+            "linkTarget": "parameter",
+            "linkLabel": "Carbon Intensity",
+            "subTarget": "ci",
+            "preText": "Carbon Intensity",
+            "style": "link"
+          },
+          {
+            "id": "b69d5332-a15f-4763-873a-88ff024987a5",
+            "cellValue": "view",
+            "linkTarget": "parameter",
+            "linkLabel": "Workloads",
+            "subTarget": "workloads",
+            "preText": "Workloads",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 3"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "csSlots_CL | project TimeGenerated | sort by TimeGenerated desc | top 1 by TimeGenerated | extend title=\"Updated At\"",
+              "size": 4,
               "timeContext": {
                 "durationMs": 86400000
               },
-              "queryType": 1,
-              "resourceType": "microsoft.resourcegraph/resources"
-            }
-          ],
-          "style": "pills",
-          "queryType": 0,
-          "resourceType": "microsoft.resourcegraph/resources"
-        },
-        "name": "parameters - 2"
-      },
-      {
-        "type": 11,
-        "content": {
-          "version": "LinkItem/1.0",
-          "style": "tabs",
-          "links": [
-            {
-              "id": "21b0f0c1-566d-4df1-ae60-be69d802d844",
-              "cellValue": "view",
-              "linkTarget": "parameter",
-              "linkLabel": "Carbon Intensity",
-              "subTarget": "ci",
-              "preText": "Carbon Intensity",
-              "style": "link"
-            },
-            {
-              "id": "b69d5332-a15f-4763-873a-88ff024987a5",
-              "cellValue": "view",
-              "linkTarget": "parameter",
-              "linkLabel": "Workloads",
-              "subTarget": "workloads",
-              "preText": "Workloads",
-              "style": "link"
-            }
-          ]
-        },
-        "name": "links - 3"
-      },
-      {
-        "type": 12,
-        "content": {
-          "version": "NotebookGroup/1.0",
-          "groupType": "editable",
-          "items": [
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csSlots_CL | project TimeGenerated | sort by TimeGenerated desc | top 1 by TimeGenerated | extend title=\"Updated At\"",
-                "size": 4,
-                "timeContext": {
-                  "durationMs": 86400000
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {
+                  "columnMatch": "title",
+                  "formatter": 1
                 },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "visualization": "tiles",
-                "tileSettings": {
-                  "titleContent": {
-                    "columnMatch": "title",
-                    "formatter": 1
-                  },
-                  "subtitleContent": {
-                    "columnMatch": "TimeGenerated",
-                    "formatter": 6,
-                    "dateFormat": {
-                      "formatName": "shortDateTimePattern"
-                    }
-                  },
-                  "showBorder": false
-                }
-              },
-              "name": "query - 2"
-            },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "\r\n\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t, intensity=intensity_d\r\n| sort by TimeGenerated,slotStart asc\r\n| where TimeGenerated > ago(30m)\r\n| summarize max(intensity) by bin(slotStart,30), region\r\n| render timechart ",
-                "size": 1,
-                "aggregation": 4,
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "chartSettings": {
-                  "seriesLabelSettings": [
-                    {
-                      "seriesName": "ukwest",
-                      "label": "UK West"
-                    },
-                    {
-                      "seriesName": "uksouth",
-                      "label": "UK South"
-                    }
-                  ],
-                  "customThresholdLineStyle": 3,
-                  "ySettings": {
-                    "min": 0
+                "subtitleContent": {
+                  "columnMatch": "TimeGenerated",
+                  "formatter": 6,
+                  "dateFormat": {
+                    "formatName": "shortDateTimePattern"
                   }
-                }
-              },
-              "name": "query - 0"
+                },
+                "showBorder": false
+              }
             },
-            {
-              "type": 12,
-              "content": {
-                "version": "NotebookGroup/1.0",
-                "groupType": "editable",
-                "items": [
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "\r\n\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t, intensity=intensity_d\r\n| sort by TimeGenerated,slotStart asc\r\n| where TimeGenerated > ago(30m)\r\n| summarize max(intensity) by bin(slotStart,30), region\r\n| render timechart ",
+              "size": 1,
+              "aggregation": 4,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "chartSettings": {
+                "seriesLabelSettings": [
                   {
-                    "type": 1,
-                    "content": {
-                      "json": "## Slots per Region"
-                    },
-                    "customWidth": "40",
-                    "name": "text - 4",
-                    "styleSettings": {
-                      "maxWidth": "40%"
-                    }
+                    "seriesName": "ukwest",
+                    "label": "UK West"
                   },
                   {
-                    "type": 1,
-                    "content": {
-                      "json": "## Generation Mix Per Slot"
-                    },
-                    "customWidth": "60",
-                    "name": "text - 4 - Copy",
-                    "styleSettings": {
-                      "maxWidth": "60%"
-                    }
+                    "seriesName": "uksouth",
+                    "label": "UK South"
                   }
-                ]
-              },
-              "name": "ci_headers"
-            },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by slotStart=slotStart_value_t, slotEnd=slotEnd_value_t\r\n| where TimeGenerated > ago(30m)\r\n| join kind=inner (\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t, intensity=intensity_d\r\n| where region == \"uksouth\" and TimeGenerated > ago(30m)\r\n| project slotStart, uksouth=intensity)\r\non slotStart\r\n| join kind=inner (\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t,intensity=intensity_d\r\n| where region == \"ukwest\" and TimeGenerated > ago(30m)\r\n| project slotStart, ukwest=intensity)\r\non slotStart\r\n| project-away slotStart1,slotStart2\r\n| summarize by slotStart,slotEnd,uksouth,ukwest\r\n| sort by slotStart asc",
-                "size": 2,
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "exportFieldName": "slotStart",
-                "exportParameterName": "slotSelected_Start",
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
                 ],
-                "gridSettings": {
-                  "formatters": [
-                    {
-                      "columnMatch": "uksouth",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed",
-                        "compositeBarSettings": {
-                          "labelText": "",
-                          "columnSettings": [
-                            {
-                              "columnName": "uksouth",
-                              "color": "blue"
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "columnMatch": "ukwest",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed"
-                      }
-                    }
-                  ],
-                  "rowLimit": 300,
-                  "labelSettings": [
-                    {
-                      "columnId": "slotStart",
-                      "label": "Slot Start"
-                    },
-                    {
-                      "columnId": "slotEnd",
-                      "label": "Slot End"
-                    },
-                    {
-                      "columnId": "uksouth",
-                      "label": "UK South"
-                    },
-                    {
-                      "columnId": "ukwest",
-                      "label": "UK West"
-                    }
-                  ]
+                "customThresholdLineStyle": 3,
+                "ySettings": {
+                  "min": 0
                 }
-              },
-              "customWidth": "40",
-              "name": "query - 1",
-              "styleSettings": {
-                "maxWidth": "40%"
               }
             },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csSlots_CL \r\n| where slotStart_value_t==\"{slotSelected_Start}\" and azureRegion_s==\"uksouth\"\r\n| summarize arg_max(TimeGenerated,*) by slotStart_value_t, azureRegion_s\r\n| extend generation=parse_json(generationMix_s)\r\n| mv-expand generation\r\n| mv-expand fuel=generation.fuel\r\n| mv-expand perc=generation.perc\r\n| project tostring(fuel), toint(perc)\r\n| render piechart",
-                "size": 2,
-                "title": "UK South",
-                "timeContext": {
-                  "durationMs": 86400000
+            "name": "query - 0"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 1,
+                  "content": {
+                    "json": "## Slots per Region"
+                  },
+                  "customWidth": "40",
+                  "name": "text - 4",
+                  "styleSettings": {
+                    "maxWidth": "40%"
+                  }
                 },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "gridSettings": {
-                  "formatters": [
-                    {
-                      "columnMatch": "uksouth",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed",
-                        "compositeBarSettings": {
-                          "labelText": "",
-                          "columnSettings": [
-                            {
-                              "columnName": "uksouth",
-                              "color": "blue"
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "columnMatch": "ukwest",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed"
-                      }
-                    }
-                  ]
-                },
-                "tileSettings": {
-                  "showBorder": false
-                },
-                "graphSettings": {
-                  "type": 0
-                },
-                "chartSettings": {
-                  "seriesLabelSettings": [
-                    {
-                      "seriesName": "gas",
-                      "label": "Gas",
-                      "color": "red"
-                    },
-                    {
-                      "seriesName": "wind",
-                      "label": "Wind",
-                      "color": "blue"
-                    },
-                    {
-                      "seriesName": "nuclear",
-                      "label": "Nuclear",
-                      "color": "orange"
-                    },
-                    {
-                      "seriesName": "imports",
-                      "color": "gray"
-                    },
-                    {
-                      "seriesName": "coal",
-                      "color": "brown"
-                    },
-                    {
-                      "seriesName": "solar",
-                      "label": "Solar",
-                      "color": "green"
-                    }
-                  ],
-                  "ySettings": {
-                    "numberFormatSettings": {
-                      "unit": 1,
-                      "options": {
-                        "style": "decimal",
-                        "useGrouping": true
-                      }
-                    }
+                {
+                  "type": 1,
+                  "content": {
+                    "json": "## Generation Mix Per Slot"
+                  },
+                  "customWidth": "60",
+                  "name": "text - 4 - Copy",
+                  "styleSettings": {
+                    "maxWidth": "60%"
                   }
                 }
-              },
-              "customWidth": "30",
-              "name": "generationMix_uksouth",
-              "styleSettings": {
-                "maxWidth": "400px"
-              }
+              ]
             },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csSlots_CL \r\n| where slotStart_value_t==\"{slotSelected_Start}\" and azureRegion_s==\"ukwest\"\r\n| summarize arg_max(TimeGenerated,*) by slotStart_value_t, azureRegion_s\r\n| extend generation=parse_json(generationMix_s)\r\n| mv-expand generation\r\n| mv-expand fuel=generation.fuel\r\n| mv-expand perc=generation.perc\r\n| project tostring(fuel), toint(perc)\r\n| render piechart",
-                "size": 2,
-                "title": "UK West",
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "gridSettings": {
-                  "formatters": [
-                    {
-                      "columnMatch": "uksouth",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed",
-                        "compositeBarSettings": {
-                          "labelText": "",
-                          "columnSettings": [
-                            {
-                              "columnName": "uksouth",
-                              "color": "blue"
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "columnMatch": "ukwest",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed"
-                      }
-                    }
-                  ]
-                },
-                "tileSettings": {
-                  "showBorder": false
-                },
-                "graphSettings": {
-                  "type": 0
-                },
-                "chartSettings": {
-                  "seriesLabelSettings": [
-                    {
-                      "seriesName": "gas",
-                      "label": "Gas",
-                      "color": "red"
-                    },
-                    {
-                      "seriesName": "wind",
-                      "label": "Wind",
-                      "color": "blue"
-                    },
-                    {
-                      "seriesName": "nuclear",
-                      "label": "Nuclear",
-                      "color": "orange"
-                    },
-                    {
-                      "seriesName": "imports",
-                      "color": "gray"
-                    },
-                    {
-                      "seriesName": "coal",
-                      "color": "brown"
-                    },
-                    {
-                      "seriesName": "solar",
-                      "label": "Solar",
-                      "color": "green"
-                    }
-                  ],
-                  "ySettings": {
-                    "numberFormatSettings": {
-                      "unit": 1,
-                      "options": {
-                        "style": "decimal",
-                        "useGrouping": true
-                      }
-                    }
-                  }
-                }
+            "name": "ci_headers"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "csSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by slotStart=slotStart_value_t, slotEnd=slotEnd_value_t\r\n| where TimeGenerated > ago(30m)\r\n| join kind=inner (\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t, intensity=intensity_d\r\n| where region == \"uksouth\" and TimeGenerated > ago(30m)\r\n| project slotStart, uksouth=intensity)\r\non slotStart\r\n| join kind=inner (\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t,intensity=intensity_d\r\n| where region == \"ukwest\" and TimeGenerated > ago(30m)\r\n| project slotStart, ukwest=intensity)\r\non slotStart\r\n| project-away slotStart1,slotStart2\r\n| summarize by slotStart,slotEnd,uksouth,ukwest\r\n| sort by slotStart asc",
+              "size": 2,
+              "timeContext": {
+                "durationMs": 86400000
               },
-              "customWidth": "30",
-              "name": "generationMix_uksouth - Copy",
-              "styleSettings": {
-                "maxWidth": "400px"
-              }
-            },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csGreenSlots_CL \r\n| summarize arg_max(TimeGenerated, *) by length_s\r\n| where TimeGenerated > ago(60m)\r\n| join kind=inner (\r\ncsGreenSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by length_s,azureRegion_s\r\n| where azureRegion_s == \"uksouth\" and TimeGenerated > ago(60m)\r\n| project length_s, uksouth_i=round(intensity_d,0), uksouth_slotStart=slotStart_value_t, uksouth_slotEnd=slotEnd_value_t)\r\non length_s\r\n| join kind=inner (\r\ncsGreenSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by length_s,azureRegion_s\r\n| where azureRegion_s == \"ukwest\" and TimeGenerated > ago(60m)\r\n| project length_s, ukwest_i=round(intensity_d,0), ukwest_slotStart=slotStart_value_t, ukwest_slotEnd=slotEnd_value_t)\r\non length_s\r\n| project length=length_s, uksouth_i, uksouth_slotStart, uksouth_slotEnd, ukwest_i, ukwest_slotStart, ukwest_slotEnd",
-                "size": 0,
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "gridSettings": {
-                  "formatters": [
-                    {
-                      "columnMatch": "uksouth_i",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed"
-                      }
-                    },
-                    {
-                      "columnMatch": "ukwest_i",
-                      "formatter": 8,
-                      "formatOptions": {
-                        "min": 0,
-                        "max": 400,
-                        "palette": "greenRed"
-                      }
-                    }
-                  ],
-                  "labelSettings": [
-                    {
-                      "columnId": "length",
-                      "label": "Length"
-                    },
-                    {
-                      "columnId": "uksouth_i",
-                      "label": "UK South Intensity"
-                    },
-                    {
-                      "columnId": "uksouth_slotStart",
-                      "label": "UK South Slot Start"
-                    },
-                    {
-                      "columnId": "uksouth_slotEnd",
-                      "label": "UK South Slot End"
-                    },
-                    {
-                      "columnId": "ukwest_i",
-                      "label": "UK West Intensity"
-                    },
-                    {
-                      "columnId": "ukwest_slotStart",
-                      "label": "UK West Slot Start"
-                    },
-                    {
-                      "columnId": "ukwest_slotEnd",
-                      "label": "UK West Slot End"
-                    }
-                  ]
-                }
-              },
-              "customWidth": "100",
-              "name": "query - 3"
-            }
-          ]
-        },
-        "conditionalVisibility": {
-          "parameterName": "view",
-          "comparison": "isEqualTo",
-          "value": "ci"
-        },
-        "name": "groupCI"
-      },
-      {
-        "type": 12,
-        "content": {
-          "version": "NotebookGroup/1.0",
-          "groupType": "editable",
-          "items": [
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "resources\r\n| where tags contains \"csLength\"\r\n| extend Length=tags['csLength']\r\n| extend Frequency=tags['csFrequency']\r\n//| extend LastRun=tags['csLastRun']\r\n//| extend Fluid=tags['csFluid']\r\n| extend StartTime=tags['csStartTime']\r\n| extend EndTime=tags['csEndTime']\r\n| project id, location, Length, Frequency, StartTime, EndTime",
-                "size": 0,
-                "queryType": 1,
-                "resourceType": "microsoft.resourcegraph/resources",
-                "crossComponentResources": [
-                  "value::all"
-                ],
-                "gridSettings": {
-                  "labelSettings": [
-                    {
-                      "columnId": "id",
-                      "label": "Resource"
-                    },
-                    {
-                      "columnId": "location",
-                      "label": "Location"
-                    },
-                    {
-                      "columnId": "Length",
-                      "label": "Length"
-                    },
-                    {
-                      "columnId": "Frequency",
-                      "label": "Frequency"
-                    },
-                    {
-                      "columnId": "StartTime",
-                      "label": "Start Time"
-                    },
-                    {
-                      "columnId": "EndTime",
-                      "label": "End Time"
-                    }
-                  ]
-                }
-              },
-              "customWidth": "50",
-              "name": "query - 0"
-            },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "",
-                "size": 0,
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces"
-              },
-              "customWidth": "50",
-              "name": "query - 1"
-            },
-            {
-              "type": 3,
-              "content": {
-                "version": "KqlItem/1.0",
-                "query": "csSchedule_CL \r\n| summarize arg_max(TimeGenerated, *) by windowStart_t, windowEnd_t, vmID_s\r\n| project TimeGenerated, vmID=vmID_s, windowStart=windowStart_t,windowEnd=windowEnd_t, slotStart=slotStart_t, slotEnd=slotEnd_s, averageIntensity=round(averageIntensity_d,0), intensity=intensity_d\r\n| extend carbonSaving=round(100-((intensity/averageIntensity)*100))\r\n| extend status=iff(todatetime(slotEnd)<now(), \"Completed\", \"Scheduled\")\r\n| sort by TimeGenerated",
-                "size": 0,
-                "timeContext": {
-                  "durationMs": 2592000000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces",
-                "crossComponentResources": [
-                  "{logAnalytics}"
-                ],
-                "gridSettings": {
-                  "formatters": [
-                    {
-                      "columnMatch": "TimeGenerated",
-                      "formatter": 5
-                    },
-                    {
-                      "columnMatch": "status",
-                      "formatter": 18,
-                      "formatOptions": {
-                        "thresholdsOptions": "icons",
-                        "thresholdsGrid": [
+              "exportFieldName": "slotStart",
+              "exportParameterName": "slotSelected_Start",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "uksouth",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "min": 0,
+                      "max": 400,
+                      "palette": "greenRed",
+                      "compositeBarSettings": {
+                        "labelText": "",
+                        "columnSettings": [
                           {
-                            "operator": "==",
-                            "thresholdValue": "Scheduled",
-                            "representation": "Clock",
-                            "text": "{0}{1}"
-                          },
-                          {
-                            "operator": "Default",
-                            "thresholdValue": null,
-                            "representation": "success",
-                            "text": "{0}{1}"
+                            "columnName": "uksouth",
+                            "color": "blue"
                           }
                         ]
                       }
                     }
-                  ],
-                  "labelSettings": [
-                    {
-                      "columnId": "vmID",
-                      "label": "Resource"
-                    },
-                    {
-                      "columnId": "windowStart",
-                      "label": "Window Start"
-                    },
-                    {
-                      "columnId": "windowEnd",
-                      "label": "Window End"
-                    },
-                    {
-                      "columnId": "slotStart",
-                      "label": "Slot Start"
-                    },
-                    {
-                      "columnId": "slotEnd",
-                      "label": "Slot End"
-                    },
-                    {
-                      "columnId": "averageIntensity",
-                      "label": "Average Intensity",
-                      "comment": "Average Intensity across the window"
-                    },
-                    {
-                      "columnId": "intensity",
-                      "label": "Intensity"
-                    },
-                    {
-                      "columnId": "carbonSaving",
-                      "label": "Carbon Saving %"
-                    },
-                    {
-                      "columnId": "status",
-                      "label": "Status"
+                  },
+                  {
+                    "columnMatch": "ukwest",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "min": 0,
+                      "max": 400,
+                      "palette": "greenRed"
                     }
-                  ]
-                }
-              },
-              "name": "query - 4"
+                  }
+                ],
+                "rowLimit": 300,
+                "labelSettings": [
+                  {
+                    "columnId": "slotStart",
+                    "label": "Slot Start"
+                  },
+                  {
+                    "columnId": "slotEnd",
+                    "label": "Slot End"
+                  },
+                  {
+                    "columnId": "uksouth",
+                    "label": "UK South"
+                  },
+                  {
+                    "columnId": "ukwest",
+                    "label": "UK West"
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "name": "query - 1",
+            "styleSettings": {
+              "maxWidth": "100%"
             }
-          ]
-        },
-        "conditionalVisibility": {
-          "parameterName": "view",
-          "comparison": "isEqualTo",
-          "value": "workloads"
-        },
-        "name": "groupWorkloads"
-      }
-    ],
-    "fallbackResourceIds": [
-      "Azure Monitor"
-    ],
-    "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
-  }
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 3,
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "csSlots_CL \r\n| where slotStart_value_t==\"{slotSelected_Start}\" and azureRegion_s==\"uksouth\"\r\n| summarize arg_max(TimeGenerated,*) by slotStart_value_t, azureRegion_s\r\n| extend generation=parse_json(generationMix_s)\r\n| mv-expand generation\r\n| mv-expand fuel=generation.fuel\r\n| mv-expand perc=generation.perc\r\n| project tostring(fuel), toint(perc)\r\n| render piechart",
+                    "size": 1,
+                    "title": "UK South",
+                    "timeContext": {
+                      "durationMs": 86400000
+                    },
+                    "queryType": 0,
+                    "resourceType": "microsoft.operationalinsights/workspaces",
+                    "crossComponentResources": [
+                      "{logAnalytics}"
+                    ],
+                    "gridSettings": {
+                      "formatters": [
+                        {
+                          "columnMatch": "uksouth",
+                          "formatter": 8,
+                          "formatOptions": {
+                            "min": 0,
+                            "max": 400,
+                            "palette": "greenRed",
+                            "compositeBarSettings": {
+                              "labelText": "",
+                              "columnSettings": [
+                                {
+                                  "columnName": "uksouth",
+                                  "color": "blue"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "columnMatch": "ukwest",
+                          "formatter": 8,
+                          "formatOptions": {
+                            "min": 0,
+                            "max": 400,
+                            "palette": "greenRed"
+                          }
+                        }
+                      ]
+                    },
+                    "tileSettings": {
+                      "showBorder": false
+                    },
+                    "graphSettings": {
+                      "type": 0
+                    },
+                    "chartSettings": {
+                      "seriesLabelSettings": [
+                        {
+                          "seriesName": "gas",
+                          "label": "Gas",
+                          "color": "red"
+                        },
+                        {
+                          "seriesName": "wind",
+                          "label": "Wind",
+                          "color": "blue"
+                        },
+                        {
+                          "seriesName": "nuclear",
+                          "label": "Nuclear",
+                          "color": "orange"
+                        },
+                        {
+                          "seriesName": "imports",
+                          "color": "gray"
+                        },
+                        {
+                          "seriesName": "coal",
+                          "color": "brown"
+                        },
+                        {
+                          "seriesName": "solar",
+                          "label": "Solar",
+                          "color": "green"
+                        }
+                      ],
+                      "ySettings": {
+                        "numberFormatSettings": {
+                          "unit": 1,
+                          "options": {
+                            "style": "decimal",
+                            "useGrouping": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "customWidth": "100",
+                  "name": "generationMix_uksouth",
+                  "styleSettings": {
+                    "maxWidth": "100%"
+                  }
+                },
+                {
+                  "type": 3,
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "csSlots_CL \r\n| where slotStart_value_t==\"{slotSelected_Start}\" and azureRegion_s==\"ukwest\"\r\n| summarize arg_max(TimeGenerated,*) by slotStart_value_t, azureRegion_s\r\n| extend generation=parse_json(generationMix_s)\r\n| mv-expand generation\r\n| mv-expand fuel=generation.fuel\r\n| mv-expand perc=generation.perc\r\n| project tostring(fuel), toint(perc)\r\n| render piechart",
+                    "size": 1,
+                    "title": "UK West",
+                    "timeContext": {
+                      "durationMs": 86400000
+                    },
+                    "queryType": 0,
+                    "resourceType": "microsoft.operationalinsights/workspaces",
+                    "crossComponentResources": [
+                      "{logAnalytics}"
+                    ],
+                    "gridSettings": {
+                      "formatters": [
+                        {
+                          "columnMatch": "uksouth",
+                          "formatter": 8,
+                          "formatOptions": {
+                            "min": 0,
+                            "max": 400,
+                            "palette": "greenRed",
+                            "compositeBarSettings": {
+                              "labelText": "",
+                              "columnSettings": [
+                                {
+                                  "columnName": "uksouth",
+                                  "color": "blue"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "columnMatch": "ukwest",
+                          "formatter": 8,
+                          "formatOptions": {
+                            "min": 0,
+                            "max": 400,
+                            "palette": "greenRed"
+                          }
+                        }
+                      ]
+                    },
+                    "tileSettings": {
+                      "showBorder": false
+                    },
+                    "graphSettings": {
+                      "type": 0
+                    },
+                    "chartSettings": {
+                      "seriesLabelSettings": [
+                        {
+                          "seriesName": "gas",
+                          "label": "Gas",
+                          "color": "red"
+                        },
+                        {
+                          "seriesName": "wind",
+                          "label": "Wind",
+                          "color": "blue"
+                        },
+                        {
+                          "seriesName": "nuclear",
+                          "label": "Nuclear",
+                          "color": "orange"
+                        },
+                        {
+                          "seriesName": "imports",
+                          "color": "gray"
+                        },
+                        {
+                          "seriesName": "coal",
+                          "color": "brown"
+                        },
+                        {
+                          "seriesName": "solar",
+                          "label": "Solar",
+                          "color": "green"
+                        }
+                      ],
+                      "ySettings": {
+                        "numberFormatSettings": {
+                          "unit": 1,
+                          "options": {
+                            "style": "decimal",
+                            "useGrouping": false
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "customWidth": "100",
+                  "name": "generationMix_uksouth - Copy",
+                  "styleSettings": {
+                    "margin": "10px",
+                    "maxWidth": "100%"
+                  }
+                }
+              ]
+            },
+            "customWidth": "100",
+            "name": "group - 7",
+            "styleSettings": {
+              "maxWidth": "50%"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "csGreenSlots_CL \r\n| summarize arg_max(TimeGenerated, *) by length_s\r\n| where TimeGenerated > ago(60m)\r\n| join kind=inner (\r\ncsGreenSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by length_s,azureRegion_s\r\n| where azureRegion_s == \"uksouth\" and TimeGenerated > ago(60m)\r\n| project length_s, uksouth_i=round(intensity_d,0), uksouth_slotStart=slotStart_value_t, uksouth_slotEnd=slotEnd_value_t)\r\non length_s\r\n| join kind=inner (\r\ncsGreenSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by length_s,azureRegion_s\r\n| where azureRegion_s == \"ukwest\" and TimeGenerated > ago(60m)\r\n| project length_s, ukwest_i=round(intensity_d,0), ukwest_slotStart=slotStart_value_t, ukwest_slotEnd=slotEnd_value_t)\r\non length_s\r\n| project length=length_s, uksouth_i, uksouth_slotStart, uksouth_slotEnd, ukwest_i, ukwest_slotStart, ukwest_slotEnd",
+              "size": 0,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "uksouth_i",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "min": 0,
+                      "max": 400,
+                      "palette": "greenRed"
+                    }
+                  },
+                  {
+                    "columnMatch": "ukwest_i",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "min": 0,
+                      "max": 400,
+                      "palette": "greenRed"
+                    }
+                  }
+                ],
+                "labelSettings": [
+                  {
+                    "columnId": "length",
+                    "label": "Length"
+                  },
+                  {
+                    "columnId": "uksouth_i",
+                    "label": "UK South Intensity"
+                  },
+                  {
+                    "columnId": "uksouth_slotStart",
+                    "label": "UK South Slot Start"
+                  },
+                  {
+                    "columnId": "uksouth_slotEnd",
+                    "label": "UK South Slot End"
+                  },
+                  {
+                    "columnId": "ukwest_i",
+                    "label": "UK West Intensity"
+                  },
+                  {
+                    "columnId": "ukwest_slotStart",
+                    "label": "UK West Slot Start"
+                  },
+                  {
+                    "columnId": "ukwest_slotEnd",
+                    "label": "UK West Slot End"
+                  }
+                ]
+              }
+            },
+            "customWidth": "100",
+            "name": "query - 3"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "view",
+        "comparison": "isEqualTo",
+        "value": "ci"
+      },
+      "name": "groupCI"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\r\n| where tags contains \"csLength\"\r\n| extend Length=tags['csLength']\r\n| extend Frequency=tags['csFrequency']\r\n//| extend LastRun=tags['csLastRun']\r\n//| extend Fluid=tags['csFluid']\r\n| extend StartTime=tags['csStartTime']\r\n| extend EndTime=tags['csEndTime']\r\n| project id, location, Length, Frequency, StartTime, EndTime",
+              "size": 0,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "value::all"
+              ],
+              "gridSettings": {
+                "labelSettings": [
+                  {
+                    "columnId": "id",
+                    "label": "Resource"
+                  },
+                  {
+                    "columnId": "location",
+                    "label": "Location"
+                  },
+                  {
+                    "columnId": "Length",
+                    "label": "Length"
+                  },
+                  {
+                    "columnId": "Frequency",
+                    "label": "Frequency"
+                  },
+                  {
+                    "columnId": "StartTime",
+                    "label": "Start Time"
+                  },
+                  {
+                    "columnId": "EndTime",
+                    "label": "End Time"
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "",
+              "size": 0,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "customWidth": "50",
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "csSchedule_CL \r\n| summarize arg_max(TimeGenerated, *) by windowStart_t, windowEnd_t, vmID_s\r\n| project TimeGenerated, vmID=vmID_s, windowStart=windowStart_t,windowEnd=windowEnd_t, slotStart=slotStart_t, slotEnd=slotEnd_s, averageIntensity=round(averageIntensity_d,0), intensity=intensity_d\r\n| extend carbonSaving=round(100-((intensity/averageIntensity)*100))\r\n| extend status=iff(todatetime(slotEnd)<now(), \"Completed\", \"Scheduled\")\r\n| sort by TimeGenerated",
+              "size": 0,
+              "timeContext": {
+                "durationMs": 2592000000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "TimeGenerated",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "status",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Scheduled",
+                          "representation": "Clock",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "labelSettings": [
+                  {
+                    "columnId": "vmID",
+                    "label": "Resource"
+                  },
+                  {
+                    "columnId": "windowStart",
+                    "label": "Window Start"
+                  },
+                  {
+                    "columnId": "windowEnd",
+                    "label": "Window End"
+                  },
+                  {
+                    "columnId": "slotStart",
+                    "label": "Slot Start"
+                  },
+                  {
+                    "columnId": "slotEnd",
+                    "label": "Slot End"
+                  },
+                  {
+                    "columnId": "averageIntensity",
+                    "label": "Average Intensity",
+                    "comment": "Average Intensity across the window"
+                  },
+                  {
+                    "columnId": "intensity",
+                    "label": "Intensity"
+                  },
+                  {
+                    "columnId": "carbonSaving",
+                    "label": "Carbon Saving %"
+                  },
+                  {
+                    "columnId": "status",
+                    "label": "Status"
+                  }
+                ]
+              }
+            },
+            "name": "query - 4"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "view",
+        "comparison": "isEqualTo",
+        "value": "workloads"
+      },
+      "name": "groupWorkloads"
+    }
+  ],
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
