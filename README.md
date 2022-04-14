@@ -17,11 +17,11 @@ Carbon Shift revolves around an Azure Automation account that uses the [Carbon I
 | csEndTime | 00:00 | When should this workload be run? | No
 
 ## To-Do
-* [ * ] Find VMs using Azure Tags
-* [ * ] Create Azure Automation Schedules via Azure Tags
-* [ * ] Log Data to Log Analytics Workspace
-* [ * ] Create Azure Workbook for Carbon Telemetry
-* [ * ] Create logic to calculate dates greater than 3 days
+* [x] Find VMs using Azure Tags
+* [x] Create Azure Automation Schedules via Azure Tags
+* [x] Log Data to Log Analytics Workspace
+* [x] Create Azure Workbook for Carbon Telemetry
+* [x] Create logic to calculate dates greater than 3 days
 * [ ] Look into other workloads (WVD Coldstart, Batch)
 * [ ] Finalise Azure Bicep Template
 
