@@ -1,13 +1,8 @@
 
 Disable-AzContextAutosave -Scope Process | Out-Null
 
-# $Global:law = @{
-#     workspaceId  = "069b325c-6d3f-4bfc-b17b-eed484875ad3"
-#     workspaceKey = "ba434IwgbXEamXZKI7nqwM1VU6x+tCgYASS/VE6vyq3LhGHdq/IsmNg0/F907Lr1pE1dORnpQXcuj6ic68AqGg=="
-# }
-
 try {
-    $AzureContext = (Connect-AzAccount -Identity -Subscription "679bfca2-ae52-45e8-b890-c26560f2eca0").context
+    $AzureContext = (Connect-AzAccount -Identity -Subscription (Get-AutomationVariable -Name "AA_SUB")).context
 }
 catch {
     Write-Output "There is no system-assigned user identity. Aborting."; 
@@ -333,15 +328,7 @@ if ($queryResults.length -gt 0) {
         # And confirm we haven't already run?
         if ($windowStart -gt $resource.csLastRun) {
             switch (($resource.csFrequency).substring(($resource.csFrequency).length - 1, 1)) {
-                "d" {
-                    # $startTime = Get-Date $windowStart | Get-Date -Hour ($resource.csStartTime).Split(':')[0] -Minute ($resource.csStartTime).Split(':')[1] -Second 0 -Millisecond 0
-                    # $endTime = Get-Date $windowEnd | Get-Date -Hour ($resource.csEndTime).Split(':')[0] -Minute ($resource.csEndTime).Split(':')[1] -Second 0 -Millisecond 0
-                                
-                    # May have an condition where 00:00 is the same day
-                    # if ($startTime -eq $endTime) {
-                    #     $endTime = $endTime.AddDays(1)
-                    # }
-                        
+                "d" {                        
                     $slotsInWindow = ($slotsFound | Where-Object { $_.azureRegion -eq $resource.location }).slots
                     
                     if ($slotsInWindow.Length -eq 0) {
