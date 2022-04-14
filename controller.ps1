@@ -82,7 +82,11 @@ if($action -eq "Start"){
 	$csLastRun = [datetime]::ParseExact($tags.Properties.TagsProperty.csLastRun, 'dd/MM/yyyy HH:mm', $null)
 	$windowFrequency = [int]($tags.Properties.TagsProperty.csFrequency).substring(($tags.Properties.TagsProperty.csFrequency).length - 2, 1)
 	$csLastRun = $csLastRun.AddDays([int]($windowFrequency))
-	Update-AzTag -ResourceId $vmID -Tag @{csLastRun = $timeNow, csLastWindow = (Get-Date $csLastRun -Format "dd/MM/yyyy HH:mm")} -Operation Merge
+	$tags =  @{
+		csLastRun = $timeNow
+		csLastWindow = (Get-Date $csLastRun -Format "dd/MM/yyyy HH:mm")
+	}
+	Update-AzTag -ResourceId $vmID -Tag $tags -Operation Merge
 } elseif ($action -eq "Stop"){
     Stop-AzVM -Id $vmID -Force
 }
