@@ -108,7 +108,7 @@
             "content": {
               "version": "KqlItem/1.0",
               "query": "\r\n\r\ncsSlots_CL\r\n| summarize arg_max(TimeGenerated, *) by region=azureRegion_s,slotStart=slotStart_value_t, slotEnd=slotEnd_value_t, intensity=intensity_d\r\n| sort by TimeGenerated,slotStart asc\r\n| where TimeGenerated > ago(30m)\r\n| summarize max(intensity) by bin(slotStart,30), region\r\n| render timechart ",
-              "size": 1,
+              "size": 0,
               "aggregation": 4,
               "timeContext": {
                 "durationMs": 86400000
@@ -128,11 +128,7 @@
                     "seriesName": "uksouth",
                     "label": "UK South"
                   }
-                ],
-                "customThresholdLineStyle": 3,
-                "ySettings": {
-                  "min": 0
-                }
+                ]
               }
             },
             "name": "query - 0"
@@ -216,6 +212,12 @@
                   }
                 ],
                 "rowLimit": 300,
+                "sortBy": [
+                  {
+                    "itemKey": "slotStart",
+                    "sortOrder": 1
+                  }
+                ],
                 "labelSettings": [
                   {
                     "columnId": "slotStart",
@@ -234,7 +236,13 @@
                     "label": "UK West"
                   }
                 ]
-              }
+              },
+              "sortBy": [
+                {
+                  "itemKey": "slotStart",
+                  "sortOrder": 1
+                }
+              ]
             },
             "customWidth": "50",
             "name": "query - 1",
@@ -548,6 +556,8 @@
               "version": "KqlItem/1.0",
               "query": "resources\r\n| where tags contains \"csLength\"\r\n| extend Length=tags['csLength']\r\n| extend Frequency=tags['csFrequency']\r\n//| extend LastRun=tags['csLastRun']\r\n//| extend Fluid=tags['csFluid']\r\n| extend StartTime=tags['csStartTime']\r\n| extend EndTime=tags['csEndTime']\r\n| project id, location, Length, Frequency, StartTime, EndTime",
               "size": 0,
+              "exportFieldName": "id",
+              "exportParameterName": "workloads_id",
               "queryType": 1,
               "resourceType": "microsoft.resourcegraph/resources",
               "crossComponentResources": [
@@ -573,38 +583,100 @@
                   },
                   {
                     "columnId": "StartTime",
-                    "label": "Start Time"
+                    "label": "Start"
                   },
                   {
                     "columnId": "EndTime",
-                    "label": "End Time"
+                    "label": "End"
                   }
                 ]
               }
             },
-            "customWidth": "50",
+            "customWidth": "40",
             "name": "query - 0"
           },
           {
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "",
+              "query": "csSchedule_CL \r\n| summarize arg_max(TimeGenerated, *) by windowStart_t, windowEnd_t, vmID_s\r\n| where slotEnd_t <> \"\" and vmID_s == \"{workloads_id}\"\r\n| project TimeGenerated, slotStart=slotStart_t, slotEnd=slotEnd_t, averageIntensity=round(averageIntensity_d,0), intensity=intensity_d\r\n| extend carbonSaving=round(100-((intensity/averageIntensity)*100))\r\n| extend status=iff(todatetime(slotEnd)<now(), \"Completed\", \"Scheduled\")\r\n| sort by TimeGenerated",
               "size": 0,
               "timeContext": {
-                "durationMs": 86400000
+                "durationMs": 2592000000
               },
               "queryType": 0,
-              "resourceType": "microsoft.operationalinsights/workspaces"
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{logAnalytics}"
+              ],
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "TimeGenerated",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "status",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Scheduled",
+                          "representation": "Clock",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "labelSettings": [
+                  {
+                    "columnId": "slotStart",
+                    "label": "Slot Start"
+                  },
+                  {
+                    "columnId": "slotEnd",
+                    "label": "Slot End"
+                  },
+                  {
+                    "columnId": "averageIntensity",
+                    "label": "Avg. Intensity",
+                    "comment": "Average Intensity across the window"
+                  },
+                  {
+                    "columnId": "intensity",
+                    "label": "Intensity"
+                  },
+                  {
+                    "columnId": "carbonSaving",
+                    "label": "Carbon Saving %"
+                  },
+                  {
+                    "columnId": "status",
+                    "label": "Status"
+                  }
+                ]
+              }
             },
-            "customWidth": "50",
-            "name": "query - 1"
+            "customWidth": "60",
+            "name": "query - 4",
+            "styleSettings": {
+              "maxWidth": "100%"
+            }
           },
           {
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "csSchedule_CL \r\n| summarize arg_max(TimeGenerated, *) by windowStart_t, windowEnd_t, vmID_s\r\n| project TimeGenerated, vmID=vmID_s, windowStart=windowStart_t,windowEnd=windowEnd_t, slotStart=slotStart_t, slotEnd=slotEnd_s, averageIntensity=round(averageIntensity_d,0), intensity=intensity_d\r\n| extend carbonSaving=round(100-((intensity/averageIntensity)*100))\r\n| extend status=iff(todatetime(slotEnd)<now(), \"Completed\", \"Scheduled\")\r\n| sort by TimeGenerated",
+              "query": "csSchedule_CL \r\n| summarize arg_max(TimeGenerated, *) by windowStart_t, windowEnd_t, vmID_s\r\n| project TimeGenerated, vmID=vmID_s, windowStart=windowStart_t,windowEnd=windowEnd_t, slotStart=slotStart_t, slotEnd=slotEnd_t, averageIntensity=round(averageIntensity_d,0), intensity=intensity_d\r\n| extend carbonSaving=round(100-((intensity/averageIntensity)*100))\r\n| extend status=iff(todatetime(slotEnd)<now(), \"Completed\", \"Scheduled\")\r\n| where slotEnd <> \"\"\r\n| sort by TimeGenerated",
               "size": 0,
               "timeContext": {
                 "durationMs": 2592000000
@@ -683,7 +755,7 @@
                 ]
               }
             },
-            "name": "query - 4"
+            "name": "query - 4 - Copy"
           }
         ]
       },
