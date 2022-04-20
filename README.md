@@ -3,7 +3,7 @@
 Carbon Shift is a solution for scheduling your Azure workloads to run at intervals where carbon intensity is at its lowest.
 
 ## Description
-Carbon Shift revolves around an Azure Automation account that uses the [Carbon Intensity API](https://www.carbonintensity.org.uk/) to gather the UK's forecast for carbon intensity and schedule your Azure workloads based on the configuration of your Azure environment. The overall goal is to shift the execution of certain workloads from a period where carbon intensity may be high to that where we know it is at its lowest.
+Carbon Shift revolves around an Azure Automation account that uses the [Carbon Intensity API](https://www.carbonintensity.org.uk/) to gather the UK's forecast for carbon intensity and schedules your Azure workloads based on the configuration of your Azure environment. The overall goal is to shift the execution of certain workloads from a period where carbon intensity may be high to that where we know it is at its lowest.
 
 ## Tags
 
@@ -22,7 +22,7 @@ Carbon Shift revolves around an Azure Automation account that uses the [Carbon I
 * [x] Log Data to Log Analytics Workspace
 * [x] Create Azure Workbook for Carbon Telemetry
 * [x] Create logic to calculate dates greater than 3 days
-* [ ] Look into other workloads (WVD, Batch, Azure Functions)
+* [ ] Look into other workloads (AVD, Batch, Azure Functions)
 * [ ] Finalise Azure Bicep Template
 
 ## How to Use
